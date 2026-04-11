@@ -1,20 +1,17 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import type { Professor, Room, Subject, ClassGroup, ScheduleEntry, ConflictReport, GenerationResult } from '@/types';
+import type { Professor, Room, Subject, ClassGroup, ScheduleEntry, ConflictReport } from '@/types';
 import { mockProfessors, mockRooms, mockSubjects, mockClassGroups } from '@/data/mockData';
-import { generateSchedule, validateSchedule } from '@/lib/scheduleAlgorithm';
+import { validateSchedule } from '@/lib/scheduleAlgorithm';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ScheduleContextValue {
-  // Entities
   professors:  Professor[];
   rooms:       Room[];
   subjects:    Subject[];
   classGroups: ClassGroup[];
 
-  // Schedule
-  entries:       ScheduleEntry[];
-  lastGenResult: GenerationResult | null;
+  entries:        ScheduleEntry[];
   conflictReport: ConflictReport;
 
   // Professor CRUD
@@ -37,9 +34,10 @@ interface ScheduleContextValue {
   updateClassGroup: (cg: ClassGroup) => void;
   deleteClassGroup: (id: string) => void;
 
-  // Schedule actions
-  runGenerate:   () => GenerationResult;
-  updateEntry:   (entry: ScheduleEntry) => void;
+  // Schedule entries
+  addEntry:    (e: Omit<ScheduleEntry, 'id'>) => void;
+  updateEntry: (e: ScheduleEntry) => void;
+  removeEntry: (id: string) => void;
   clearSchedule: () => void;
 }
 
@@ -47,10 +45,8 @@ interface ScheduleContextValue {
 
 const ScheduleContext = createContext<ScheduleContextValue | null>(null);
 
-let _idCounter = 1000;
-function nextId(prefix: string): string {
-  return `${prefix}-${++_idCounter}`;
-}
+let _counter = 1000;
+function nextId(prefix: string) { return `${prefix}-${++_counter}`; }
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
@@ -60,79 +56,58 @@ export function ScheduleProvider({ children }: { children: React.ReactNode }) {
   const [subjects,    setSubjects]    = useState<Subject[]>(mockSubjects);
   const [classGroups, setClassGroups] = useState<ClassGroup[]>(mockClassGroups);
   const [entries,     setEntries]     = useState<ScheduleEntry[]>([]);
-  const [lastGenResult, setLastGenResult] = useState<GenerationResult | null>(null);
 
   // ── Professor ──
-  const addProfessor = useCallback((p: Omit<Professor, 'id'>) => {
-    setProfessors(prev => [...prev, { ...p, id: nextId('p') }]);
-  }, []);
-  const updateProfessor = useCallback((p: Professor) => {
-    setProfessors(prev => prev.map(x => x.id === p.id ? p : x));
-  }, []);
-  const deleteProfessor = useCallback((id: string) => {
-    setProfessors(prev => prev.filter(x => x.id !== id));
-  }, []);
+  const addProfessor    = useCallback((p: Omit<Professor, 'id'>) =>
+    setProfessors(prev => [...prev, { ...p, id: nextId('p') }]), []);
+  const updateProfessor = useCallback((p: Professor) =>
+    setProfessors(prev => prev.map(x => x.id === p.id ? p : x)), []);
+  const deleteProfessor = useCallback((id: string) =>
+    setProfessors(prev => prev.filter(x => x.id !== id)), []);
 
   // ── Room ──
-  const addRoom = useCallback((r: Omit<Room, 'id'>) => {
-    setRooms(prev => [...prev, { ...r, id: nextId('r') }]);
-  }, []);
-  const updateRoom = useCallback((r: Room) => {
-    setRooms(prev => prev.map(x => x.id === r.id ? r : x));
-  }, []);
-  const deleteRoom = useCallback((id: string) => {
-    setRooms(prev => prev.filter(x => x.id !== id));
-  }, []);
+  const addRoom    = useCallback((r: Omit<Room, 'id'>) =>
+    setRooms(prev => [...prev, { ...r, id: nextId('r') }]), []);
+  const updateRoom = useCallback((r: Room) =>
+    setRooms(prev => prev.map(x => x.id === r.id ? r : x)), []);
+  const deleteRoom = useCallback((id: string) =>
+    setRooms(prev => prev.filter(x => x.id !== id)), []);
 
   // ── Subject ──
-  const addSubject = useCallback((s: Omit<Subject, 'id'>) => {
-    setSubjects(prev => [...prev, { ...s, id: nextId('s') }]);
-  }, []);
-  const updateSubject = useCallback((s: Subject) => {
-    setSubjects(prev => prev.map(x => x.id === s.id ? s : x));
-  }, []);
-  const deleteSubject = useCallback((id: string) => {
-    setSubjects(prev => prev.filter(x => x.id !== id));
-  }, []);
+  const addSubject    = useCallback((s: Omit<Subject, 'id'>) =>
+    setSubjects(prev => [...prev, { ...s, id: nextId('s') }]), []);
+  const updateSubject = useCallback((s: Subject) =>
+    setSubjects(prev => prev.map(x => x.id === s.id ? s : x)), []);
+  const deleteSubject = useCallback((id: string) =>
+    setSubjects(prev => prev.filter(x => x.id !== id)), []);
 
   // ── ClassGroup ──
-  const addClassGroup = useCallback((cg: Omit<ClassGroup, 'id'>) => {
-    setClassGroups(prev => [...prev, { ...cg, id: nextId('cg') }]);
-  }, []);
-  const updateClassGroup = useCallback((cg: ClassGroup) => {
-    setClassGroups(prev => prev.map(x => x.id === cg.id ? cg : x));
-  }, []);
-  const deleteClassGroup = useCallback((id: string) => {
-    setClassGroups(prev => prev.filter(x => x.id !== id));
-  }, []);
+  const addClassGroup    = useCallback((cg: Omit<ClassGroup, 'id'>) =>
+    setClassGroups(prev => [...prev, { ...cg, id: nextId('cg') }]), []);
+  const updateClassGroup = useCallback((cg: ClassGroup) =>
+    setClassGroups(prev => prev.map(x => x.id === cg.id ? cg : x)), []);
+  const deleteClassGroup = useCallback((id: string) =>
+    setClassGroups(prev => prev.filter(x => x.id !== id)), []);
 
-  // ── Schedule ──
-  const runGenerate = useCallback((): GenerationResult => {
-    const result = generateSchedule(professors, rooms, subjects, classGroups);
-    setEntries(result.entries);
-    setLastGenResult(result);
-    return result;
-  }, [professors, rooms, subjects, classGroups]);
-
-  const updateEntry = useCallback((updated: ScheduleEntry) => {
-    setEntries(prev => prev.map(e => e.id === updated.id ? updated : e));
-  }, []);
-
-  const clearSchedule = useCallback(() => {
-    setEntries([]);
-    setLastGenResult(null);
-  }, []);
+  // ── Entries ──
+  const addEntry = useCallback((e: Omit<ScheduleEntry, 'id'>) =>
+    setEntries(prev => [...prev, { ...e, id: nextId('e') }]), []);
+  const updateEntry = useCallback((e: ScheduleEntry) =>
+    setEntries(prev => prev.map(x => x.id === e.id ? e : x)), []);
+  const removeEntry = useCallback((id: string) =>
+    setEntries(prev => prev.filter(x => x.id !== id)), []);
+  const clearSchedule = useCallback(() => setEntries([]), []);
 
   const conflictReport = useMemo(() => validateSchedule(entries), [entries]);
 
   const value: ScheduleContextValue = {
     professors, rooms, subjects, classGroups,
-    entries, lastGenResult, conflictReport,
+    entries, conflictReport,
     addProfessor, updateProfessor, deleteProfessor,
     addRoom, updateRoom, deleteRoom,
     addSubject, updateSubject, deleteSubject,
     addClassGroup, updateClassGroup, deleteClassGroup,
-    runGenerate, updateEntry, clearSchedule,
+    addEntry, updateEntry, removeEntry, clearSchedule,
   };
 
   return <ScheduleContext.Provider value={value}>{children}</ScheduleContext.Provider>;
