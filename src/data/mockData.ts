@@ -1,121 +1,149 @@
-export interface Barber {
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-  available: boolean;
-}
+import type { Professor, Room, Subject, ClassGroup } from '@/types';
 
-export interface Service {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  durationMinutes: number;
-}
+const COLORS = [
+  '#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981',
+  '#3b82f6', '#ef4444', '#14b8a6', '#f97316', '#84cc16',
+  '#06b6d4', '#a855f7',
+];
 
-export interface Booking {
-  id: string;
-  barberId: string;
-  barberName: string;
-  serviceId: string;
-  serviceName: string;
-  servicePrice: number;
-  date: string;
-  slot: string;
-  clientName: string;
-}
+export const mockSubjects: Subject[] = [
+  { id: 's1',  name: 'Cálculo I',                 code: 'MAT101', weeklyHours: 4, sessionsPerWeek: 2, semester: 1, requiresLab: false, color: COLORS[0]  },
+  { id: 's2',  name: 'Álgebra Linear',             code: 'MAT102', weeklyHours: 4, sessionsPerWeek: 2, semester: 1, requiresLab: false, color: COLORS[1]  },
+  { id: 's3',  name: 'Programação I',              code: 'CC101',  weeklyHours: 4, sessionsPerWeek: 2, semester: 1, requiresLab: true,  color: COLORS[2]  },
+  { id: 's4',  name: 'Lógica de Programação',      code: 'CC102',  weeklyHours: 2, sessionsPerWeek: 1, semester: 1, requiresLab: false, color: COLORS[3]  },
+  { id: 's5',  name: 'Banco de Dados I',           code: 'CC201',  weeklyHours: 4, sessionsPerWeek: 2, semester: 2, requiresLab: true,  color: COLORS[4]  },
+  { id: 's6',  name: 'Estruturas de Dados',        code: 'CC202',  weeklyHours: 4, sessionsPerWeek: 2, semester: 2, requiresLab: false, color: COLORS[5]  },
+  { id: 's7',  name: 'Redes de Computadores',      code: 'CC301',  weeklyHours: 4, sessionsPerWeek: 2, semester: 3, requiresLab: true,  color: COLORS[6]  },
+  { id: 's8',  name: 'Engenharia de Software',     code: 'CC302',  weeklyHours: 4, sessionsPerWeek: 2, semester: 3, requiresLab: false, color: COLORS[7]  },
+  { id: 's9',  name: 'Inteligência Artificial',    code: 'CC401',  weeklyHours: 4, sessionsPerWeek: 2, semester: 4, requiresLab: true,  color: COLORS[8]  },
+  { id: 's10', name: 'Programação Web',            code: 'CC402',  weeklyHours: 4, sessionsPerWeek: 2, semester: 4, requiresLab: true,  color: COLORS[9]  },
+  { id: 's11', name: 'Sistemas Operacionais',      code: 'CC303',  weeklyHours: 4, sessionsPerWeek: 2, semester: 3, requiresLab: false, color: COLORS[10] },
+  { id: 's12', name: 'Compiladores',               code: 'CC403',  weeklyHours: 4, sessionsPerWeek: 2, semester: 4, requiresLab: false, color: COLORS[11] },
+];
 
-export interface TimeSlot {
-  label: string;
-  start: string;
-  end: string;
-}
-
-export const barbeiros: Barber[] = [
+export const mockProfessors: Professor[] = [
   {
-    id: "b1",
-    name: "Carlos Silva",
-    description: "Especialista em cortes clássicos e degradê. Mais de 10 anos de experiência com técnicas tradicionais e modernas.",
-    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=300&fit=crop&crop=face",
-    available: true,
+    id: 'p1',
+    name: 'Dr. Ana Rodrigues',
+    email: 'ana.rodrigues@univ.edu.br',
+    department: 'Matemática',
+    subjectIds: ['s1', 's2'],
+    availability: {
+      monday:    ['p1', 'p2', 'p3'],
+      tuesday:   ['p1', 'p2', 'p4', 'p5'],
+      wednesday: ['p2', 'p3'],
+      thursday:  ['p1', 'p2', 'p3', 'p4'],
+      friday:    ['p2', 'p3', 'p4'],
+    },
   },
   {
-    id: "b2",
-    name: "Rafael Mendes",
-    description: "Expert em cortes modernos, pigmentação e tratamentos capilares. Referência em estilos urbanos.",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&crop=face",
-    available: true,
+    id: 'p2',
+    name: 'Prof. Carlos Lima',
+    email: 'carlos.lima@univ.edu.br',
+    department: 'Computação',
+    subjectIds: ['s3', 's4'],
+    availability: {
+      monday:    ['p2', 'p3', 'p4', 'p5'],
+      tuesday:   ['p2', 'p3', 'p4'],
+      wednesday: ['p3', 'p4', 'p5', 'p6'],
+      thursday:  ['p2', 'p3'],
+      friday:    ['p3', 'p4', 'p5'],
+    },
   },
   {
-    id: "b3",
-    name: "Diego Santos",
-    description: "Mestre em navalhação e modelagem de barba. Atendimento VIP com produtos premium importados.",
-    image: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=400&h=300&fit=crop&crop=face",
-    available: true,
+    id: 'p3',
+    name: 'Profa. Mariana Costa',
+    email: 'mariana.costa@univ.edu.br',
+    department: 'Computação',
+    subjectIds: ['s5', 's6'],
+    availability: {
+      monday:    ['p1', 'p2', 'p5', 'p6'],
+      tuesday:   ['p1', 'p4', 'p5', 'p6'],
+      wednesday: ['p1', 'p2', 'p5'],
+      thursday:  ['p4', 'p5', 'p6'],
+      friday:    ['p1', 'p2', 'p5', 'p6'],
+    },
   },
   {
-    id: "b4",
-    name: "Lucas Ferreira",
-    description: "Especialista em cabelos cacheados e crespos. Técnicas exclusivas de hidratação e finalização.",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=300&fit=crop&crop=face",
-    available: true,
+    id: 'p4',
+    name: 'Dr. Roberto Santos',
+    email: 'roberto.santos@univ.edu.br',
+    department: 'Redes',
+    subjectIds: ['s7', 's8', 's11'],
+    availability: {
+      monday:    ['p3', 'p4', 'p7', 'p8'],
+      tuesday:   ['p3', 'p4', 'p7', 'p8'],
+      wednesday: ['p3', 'p4'],
+      thursday:  ['p3', 'p4', 'p7', 'p8'],
+      friday:    ['p3', 'p4', 'p7', 'p8'],
+    },
+  },
+  {
+    id: 'p5',
+    name: 'Profa. Júlia Fernandes',
+    email: 'julia.fernandes@univ.edu.br',
+    department: 'Computação',
+    subjectIds: ['s9', 's10', 's12'],
+    availability: {
+      monday:    ['p2', 'p3', 'p4', 'p5'],
+      tuesday:   ['p2', 'p3', 'p4', 'p5'],
+      wednesday: ['p2', 'p3', 'p4', 'p5'],
+      thursday:  ['p2', 'p3', 'p4', 'p5'],
+      friday:    ['p2', 'p3', 'p4', 'p5'],
+    },
   },
 ];
 
-export const servicos: Service[] = [
-  {
-    id: "s1",
-    name: "Corte Clássico",
-    description: "Corte tradicional com tesoura e máquina, acabamento perfeito com navalha.",
-    price: 35,
-    durationMinutes: 30,
-  },
-  {
-    id: "s2",
-    name: "Barba",
-    description: "Aparação, modelagem e hidratação de barba com navalha e produtos premium.",
-    price: 25,
-    durationMinutes: 30,
-  },
-  {
-    id: "s3",
-    name: "Combo (Corte + Barba)",
-    description: "Serviço completo de corte e barba com acabamento profissional.",
-    price: 55,
-    durationMinutes: 60,
-  },
-  {
-    id: "s4",
-    name: "Degradê",
-    description: "Corte em degradê com transição suave, finalizado com gel ou pomada.",
-    price: 40,
-    durationMinutes: 30,
-  },
-  {
-    id: "s5",
-    name: "Hidratação Capilar",
-    description: "Tratamento profundo com máscara hidratante e finalização com secador.",
-    price: 30,
-    durationMinutes: 30,
-  },
+export const mockRooms: Room[] = [
+  { id: 'r1', name: 'Sala 101',     building: 'Bloco A', capacity: 40, type: 'theoretical' },
+  { id: 'r2', name: 'Sala 102',     building: 'Bloco A', capacity: 40, type: 'theoretical' },
+  { id: 'r3', name: 'Sala 103',     building: 'Bloco A', capacity: 30, type: 'theoretical' },
+  { id: 'r4', name: 'Sala 201',     building: 'Bloco B', capacity: 50, type: 'theoretical' },
+  { id: 'r5', name: 'Sala 202',     building: 'Bloco B', capacity: 50, type: 'theoretical' },
+  { id: 'r6', name: 'Lab. Inf. 1',  building: 'Bloco C', capacity: 30, type: 'laboratory'  },
+  { id: 'r7', name: 'Lab. Inf. 2',  building: 'Bloco C', capacity: 30, type: 'laboratory'  },
+  { id: 'r8', name: 'Lab. Redes',   building: 'Bloco C', capacity: 20, type: 'laboratory'  },
 ];
 
-export const timeSlots: TimeSlot[] = [
-  // Manhã
-  { label: "09:00 – 09:30", start: "09:00", end: "09:30" },
-  { label: "09:30 – 10:00", start: "09:30", end: "10:00" },
-  { label: "10:00 – 10:30", start: "10:00", end: "10:30" },
-  { label: "10:30 – 11:00", start: "10:30", end: "11:00" },
-  { label: "11:00 – 11:30", start: "11:00", end: "11:30" },
-  { label: "11:30 – 12:00", start: "11:30", end: "12:00" },
-  // Tarde
-  { label: "14:00 – 14:30", start: "14:00", end: "14:30" },
-  { label: "14:30 – 15:00", start: "14:30", end: "15:00" },
-  { label: "15:00 – 15:30", start: "15:00", end: "15:30" },
-  { label: "15:30 – 16:00", start: "15:30", end: "16:00" },
-  { label: "16:00 – 16:30", start: "16:00", end: "16:30" },
-  { label: "16:30 – 17:00", start: "16:30", end: "17:00" },
-  { label: "17:00 – 17:30", start: "17:00", end: "17:30" },
-  { label: "17:30 – 18:00", start: "17:30", end: "18:00" },
+export const mockClassGroups: ClassGroup[] = [
+  {
+    id: 'cg1',
+    name: 'ADS-1A',
+    course: 'Análise e Desenvolvimento de Sistemas',
+    semester: 1,
+    studentCount: 35,
+    subjectIds: ['s1', 's2', 's3', 's4'],
+  },
+  {
+    id: 'cg2',
+    name: 'ADS-1B',
+    course: 'Análise e Desenvolvimento de Sistemas',
+    semester: 1,
+    studentCount: 38,
+    subjectIds: ['s1', 's2', 's3', 's4'],
+  },
+  {
+    id: 'cg3',
+    name: 'ADS-2A',
+    course: 'Análise e Desenvolvimento de Sistemas',
+    semester: 2,
+    studentCount: 32,
+    subjectIds: ['s5', 's6'],
+  },
+  {
+    id: 'cg4',
+    name: 'CC-3A',
+    course: 'Ciência da Computação',
+    semester: 3,
+    studentCount: 28,
+    subjectIds: ['s7', 's8', 's11'],
+  },
+  {
+    id: 'cg5',
+    name: 'CC-4A',
+    course: 'Ciência da Computação',
+    semester: 4,
+    studentCount: 25,
+    subjectIds: ['s9', 's10', 's12'],
+  },
 ];
