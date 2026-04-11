@@ -3,11 +3,13 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ReservationProvider } from "@/contexts/ReservationContext";
-import Home from "./pages/Home";
-import BookingPage from "./pages/BookingPage";
-import MyReservations from "./pages/MyReservations";
-import AdminPage from "./pages/AdminPage";
+import { ScheduleProvider } from "@/contexts/ScheduleContext";
+import Dashboard from "./pages/Dashboard";
+import ProfessoresPage from "./pages/ProfessoresPage";
+import SalasPage from "./pages/SalasPage";
+import DisciplinasPage from "./pages/DisciplinasPage";
+import TurmasPage from "./pages/TurmasPage";
+import GradePage from "./pages/GradePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -17,17 +19,19 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <ReservationProvider>
+      <ScheduleProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/barbeiros/:id" element={<BookingPage />} />
-            <Route path="/meus-agendamentos" element={<MyReservations />} />
-            <Route path="/admin" element={<AdminPage />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="/"             element={<Dashboard />} />
+            <Route path="/professores"  element={<ProfessoresPage />} />
+            <Route path="/salas"        element={<SalasPage />} />
+            <Route path="/disciplinas"  element={<DisciplinasPage />} />
+            <Route path="/turmas"       element={<TurmasPage />} />
+            <Route path="/grade"        element={<GradePage />} />
+            <Route path="*"             element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </ReservationProvider>
+      </ScheduleProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
